@@ -1,0 +1,22 @@
+{
+  "id": "https://gym.example.com/attestations/gym-membership-card",
+  "version": "1.0.0",
+  "rulebookURI": "https://gym.example.com/rulebooks/gym-membership-card/1.0.0",
+  "trustedAuthorities": [
+    {
+      "frameworkType": "etsi_tl",
+      "value": "https://trust.example.com/etsi-tl/gym-trust-anchor"
+    }
+  ],
+  "attestationLoS": "iso_18045_basic",
+  "bindingType": "key",
+  "supportedFormats": [
+    "dc+sd-jwt"    
+  ],
+  "schemaURIs": [
+    {
+      "formatIdentifier": "dc+sd-jwt",
+      "uri": "https://schemas.example.org/attestations/gym-membership-card/1.0.0/dc+sd-jwt.json"
+    }    
+  ]
+}

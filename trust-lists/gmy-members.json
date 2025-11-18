@@ -1,0 +1,160 @@
+{
+    "LoTE": {
+        "ListAndSchemeInformation": {
+            "LoTEVersionIdentifier": 1,
+            "LoTESequenceNumber": 1,
+            "LoTEType": "https://example.org/lote/type/attestation-trust-list",
+            "SchemeOperatorName": [
+                {
+                    "lang": "en",
+                    "value": "Example Trust List Operator"
+                }
+            ],
+            "SchemeOperatorAddress": {
+                "SchemeOperatorPostalAddress": [
+                    {
+                        "lang": "en",
+                        "StreetAddress": "Example Street 1",
+                        "Locality": "Example City",
+                        "StateOrProvince": "Example State",
+                        "PostalCode": "12345",
+                        "Country": "DE"
+                    }
+                ],
+                "SchemeOperatorElectronicAddress": [
+                    {
+                        "lang": "en",
+                        "uriValue": "mailto:tl-operator@example.org"
+                    }
+                ]
+            },
+            "SchemeName": [
+                {
+                    "lang": "en",
+                    "value": "Example LoTE for Gym Membership Issuers"
+                }
+            ],
+            "SchemeInformationURI": [
+                {
+                    "lang": "en",
+                    "uriValue": "https://example.org/lote/info"
+                }
+            ],
+            "StatusDeterminationApproach": "https://example.org/lote/status-determination/manual",
+            "SchemeTypeCommunityRules": [
+                {
+                    "lang": "en",
+                    "uriValue": "https://example.org/lote/community-rules"
+                }
+            ],
+            "SchemeTerritory": "DE",
+            "PolicyOrLegalNotice": [
+                {
+                    "LoTEPolicy": {
+                        "lang": "en",
+                        "uriValue": "https://example.org/lote/policy"
+                    }
+                }
+            ],
+            "HistoricalInformationPeriod": 365,
+            "ListIssueDateTime": "2025-01-01T00:00:00Z",
+            "NextUpdate": "2026-01-01T00:00:00Z",
+            "DistributionPoints": [
+                "https://example.org/lote/current.json"
+            ]
+        },
+        "TrustedEntitiesList": [
+            {
+                "TrustedEntityInformation": {
+                    "TEName": [
+                        {
+                            "lang": "en",
+                            "value": "Mighty Fitness Center GmbH"
+                        }
+                    ],
+                    "TETradeName": [
+                        {
+                            "lang": "en",
+                            "value": "Mighty Fitness"
+                        }
+                    ],
+                    "TEAddress": {
+                        "TEPostalAddress": [
+                            {
+                                "lang": "en",
+                                "StreetAddress": "Gym Street 5",
+                                "Locality": "Fitville",
+                                "PostalCode": "54321",
+                                "Country": "DE"
+                            }
+                        ],
+                        "TEElectronicAddress": [
+                            {
+                                "lang": "en",
+                                "uriValue": "mailto:contact@gym.example.com"
+                            }
+                        ]
+                    },
+                    "TEInformationURI": [
+                        {
+                            "lang": "en",
+                            "uriValue": "https://gym.example.com"
+                        }
+                    ]
+                },
+                "TrustedEntityServices": [
+                    {
+                        "ServiceInformation": {
+                            "ServiceName": [
+                                {
+                                    "lang": "en",
+                                    "value": "Gym Membership Attestation Issuance"
+                                }
+                            ],
+                            "ServiceDigitalIdentity": {
+                                "X509Certificates": [
+                                    {
+                                        "encoding": "urn:ietf:params:tls-cert-type:x509",
+                                        "specRef": "RFC5280",
+                                        "val": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A..."
+                                    }
+                                ],
+                                "PublicKeyValues": [
+                                    {
+                                        "kty": "RSA",
+                                        "n": "sXchFJ2X8V3w1lWvL8X45Z9Xl4s0T0gA3Q4a5C6D7E8F9G0H1I2J3K4L5M6N7O8P",
+                                        "e": "AQAB",
+                                        "alg": "RS256",
+                                        "use": "sig",
+                                        "kid": "gym-issuer-key-1"
+                                    }
+                                ]
+                            },
+                            "ServiceTypeIdentifier": "https://example.org/service-type/gym-attestation-issuer",
+                            "ServiceStatus": "https://example.org/status/granted",
+                            "StatusStartingTime": "2025-01-01T00:00:00Z",
+                            "SchemeServiceDefinitionURI": [
+                                {
+                                    "lang": "en",
+                                    "uriValue": "https://example.org/lote/service-definitions/gym-attestation-issuer"
+                                }
+                            ],
+                            "ServiceSupplyPoints": [
+                                {
+                                    "ServiceType": "https://example.org/service-type/gym-attestation-issuer",
+                                    "uriValue": "https://issuer.gym.example.com"
+                                }
+                            ],
+                            "ServiceDefinitionURI": [
+                                {
+                                    "lang": "en",
+                                    "uriValue": "https://gym.example.com/attestations/gym-membership-card"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

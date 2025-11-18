@@ -1,0 +1,16 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "attestations/*.json"
+      ],
+      "url": "./catalog.schema.json"
+    },
+    {
+        "fileMatch": [
+          "trust-lists/*.json"
+        ],
+        "url": "https://forge.etsi.org/rep/esi/x19_60201_lists_of_trusted_entities/-/raw/main/1960201_json_schema/1960201_json_schema.json?ref_type=heads"
+    }
+  ]
+}

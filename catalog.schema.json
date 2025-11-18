@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/attestation-definition.json",
+  "title": "Attestation Definition",
+  "description": "Metadata for a single attestation type (one file per attestation).",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of this attestation definition (e.g., URI or slug)."
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of this attestation definition (SemVer).",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-.]+)?(?:\\+[0-9A-Za-z-.]+)?$"
+    },
+    "rulebookURI": {
+      "type": "string",
+      "description": "URI of the human-readable Attestation Rulebook, optionally with an SRI integrity fragment.",
+      "format": "uri"
+    },
+    "trustedAuthorities": {
+      "type": "array",
+      "description": "Trust frameworks / trust anchors applicable to this attestation type.",
+      "items": {
+        "$ref": "#/$defs/TrustAuthority"
+      }
+    },
+    "attestationLoS": {
+      "type": "string",
+      "description": "Level of security (LoS) of this attestation.",
+      "enum": [
+        "iso_18045_high",
+        "iso_18045_moderate",
+        "iso_18045_enhanced-basic",
+        "iso_18045_basic"
+      ]
+    },
+    "bindingType": {
+      "type": "string",
+      "description": "Required binding type between attestation and holder.",
+      "enum": [
+        "claim",
+        "key",
+        "biometric",
+        "none"
+      ]
+    },
+    "supportedFormats": {
+      "type": "array",
+      "description": "Credential formats in which this attestation is available.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "dc+sd-jwt",
+          "mso_mdoc",
+          "jwt_vc_json",
+          "jwt_vc_json-ld",
+          "ldp_vc"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "schemaURIs": {
+      "type": "array",
+      "description": "Format-specific schema URIs for this attestation type.",
+      "items": {
+        "$ref": "#/$defs/Schema"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "rulebookURI",
+    "attestationLoS",
+    "bindingType",
+    "supportedFormats",
+    "schemaURIs"
+  ],
+  "additionalProperties": false,
+
+  "$defs": {
+    "Schema": {
+      "type": "object",
+      "description": "Format-specific schema descriptor for the attestation.",
+      "properties": {
+        "formatIdentifier": {
+          "type": "string",
+          "description": "The credential format identifier.",
+          "enum": [
+            "dc+sd-jwt",
+            "mso_mdoc",
+            "jwt_vc_json",
+            "jwt_vc_json-ld",
+            "ldp_vc"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "description": "Persistent schema URI for this format (may include SRI fragment).",
+          "format": "uri"
+        }
+      },
+      "required": ["formatIdentifier", "uri"],
+      "additionalProperties": false
+    },
+
+    "TrustAuthority": {
+      "type": "object",
+      "description": "Applicable trust framework and authority/anchor.",
+      "properties": {
+        "frameworkType": {
+          "type": "string",
+          "description": "Type of trust framework.",
+          "enum": [
+            "aki",
+            "etsi_tl",
+            "openid_federation"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "description": "Identifier of the authority (AKI, TL URI, or federation entity identifier)."
+        },
+        "isLoTE": {
+          "type": "boolean",
+          "description": "TRUE if frameworkType is 'etsi_tl' and the TL is a List of Trusted Entities (LoTE)."
+        }
+      },
+      "required": ["frameworkType", "value"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "frameworkType": { "const": "etsi_tl" } },
+            "required": ["frameworkType"]
+          },
+          "then": {
+            "properties": {
+              "isLoTE": { "type": "boolean" }
+            }
+          },
+          "else": {
+            "not": {
+              "required": ["isLoTE"]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
