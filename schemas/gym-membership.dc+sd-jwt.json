@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.example.org/attestations/gym-membership-card/1.0.0/dc+sd-jwt.json",
+  "$id": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/schemas/gym-membership.dc+sd-jwt.json",
   "title": "Gym Membership Card (SD-JWT VC)",
   "description": "Logical claim set for the Gym Membership Card SD-JWT VC.",
   "type": "object",
@@ -33,15 +33,13 @@
     },
 
     "nbf": {
-      "type": "string",
-      "description": "Date from which the membership is valid (inclusive).",
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      "type": "number",
+      "description": "Date from which the membership is valid (inclusive)."   
     },
 
     "exp": {
-      "type": "string",
-      "description": "Date until which the membership is valid (inclusive), assuming it is not revoked.",
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      "type": "number",
+      "description": "Date until which the membership is valid (inclusive), assuming it is not revoked."
     }
   },
 

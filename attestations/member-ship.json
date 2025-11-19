@@ -1,22 +1,22 @@
 {
   "id": "https://gym.example.com/attestations/gym-membership-card",
   "version": "1.0.0",
-  "rulebookURI": "https://gym.example.com/rulebooks/gym-membership-card/1.0.0",
+  "rulebookURI": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/rulebooks/gym-membership-card/1.0.0.md",
   "trustedAuthorities": [
     {
       "frameworkType": "etsi_tl",
-      "value": "https://trust.example.com/etsi-tl/gym-trust-anchor"
+      "value": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/trust-lists/gmy-members.json"
     }
   ],
   "attestationLoS": "iso_18045_basic",
   "bindingType": "key",
   "supportedFormats": [
-    "dc+sd-jwt"    
+    "dc+sd-jwt"
   ],
   "schemaURIs": [
     {
       "formatIdentifier": "dc+sd-jwt",
-      "uri": "https://schemas.example.org/attestations/gym-membership-card/1.0.0/dc+sd-jwt.json"
-    }    
+      "uri": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/schemas/gym-membership.dc+sd-jwt.json"
+    }
   ]
 }

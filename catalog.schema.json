@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/schemas/attestation-definition.json",
+  "$id": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/catalog.schema.json",
   "title": "Attestation Definition",
   "description": "Metadata for a single attestation type (one file per attestation).",
   "type": "object",
