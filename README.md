@@ -45,7 +45,7 @@ catalog-of-attestations/
 │   └── gym-members.json                # ETSI LoTE trust list with X.509 + JWK
 └── rulebooks/
     └── gym-membership-card/
-        └── 1.0.0.md                    # (optional) human-readable rulebook
+        └── 1.0.0.md                    # Human-readable Attestation Rulebook (TS11 Section 4.2)
 ```
 
 The pieces are intentionally modular — each file has a clear single responsibility.
@@ -54,7 +54,7 @@ The pieces are intentionally modular — each file has a clear single responsibi
 
 This repository can serve multiple actors:
 
-### redential Issuers
+### Credential Issuers
 
 Define and publish attestation types they support, including schemas, formats, and trust declarations.
 
@@ -72,19 +72,20 @@ Publish catalogs of standardized attestation types for domains (education, healt
 
 ## Component Details
 
-## 1. `catalog.schema.json` — Attestation Definition Schema
+## 1. `catalog.schema.json` — SchemaMeta Definition (TS11)
 
-This is the **meta-definition** for a single attestation type (from TS11).
+This is the **meta-definition** for a single attestation type, aligned with the `SchemaMeta` data model from [TS11 Section 4.3.1](https://github.com/eu-digital-identity-wallet/eudi-doc-standards-and-technical-specifications/blob/main/docs/technical-specifications/ts11-interfaces-and-formats-for-catalogue-of-attributes-and-catalogue-of-schemes.md#431-schemameta-main-class).
 
 It defines:
 
-- the attestation ID (`id`)
-- version (`version`)
-- `rulebookURI`
-- `supportedFormats[]`
-- `schemaURIs[]`
-- `trustedAuthorities[]`
-- security and binding requirements
+- `id` — unique identifier (UUID), server-assigned when registered in the official catalogue
+- `version` — SemVer version string
+- `rulebookURI` — URI to the human-readable Attestation Rulebook
+- `supportedFormats[]` — credential formats (e.g., `dc+sd-jwt`, `mso_mdoc`)
+- `schemaURIs[]` — format-specific schema URIs
+- `trustedAuthorities[]` — trust framework references (LoTE, AKI, OpenID Federation)
+- `attestationLoS` — level of security (ISO 18045)
+- `bindingType` — cryptographic binding type (claim, key, biometric, none)
 
 It is the schema that all entries in `attestations/` must conform to.
 
@@ -106,7 +107,7 @@ It specifies:
 - where to find its **schema**, e.g.  
   `schemas/gym-membership.dc+sd-jwt.json`
 - which **trust list** provides the issuers  
-  `trust-lists/gym-members.json`
+  `trust-lists/gmy-members.json`
 - which **rulebook** describes the semantics & policies  
   `rulebooks/gym-membership-card/1.0.0.md`
 

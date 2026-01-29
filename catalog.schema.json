@@ -1,13 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/catalog.schema.json",
-  "title": "Attestation Definition",
-  "description": "Metadata for a single attestation type (one file per attestation).",
+  "title": "SchemaMeta",
+  "description": "A common attestation schema data model, aligned with EUDI TS11 specification.",
   "type": "object",
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique identifier of this attestation definition (e.g., URI or slug)."
+      "format": "uuid",
+      "description": "The unique, server-assigned identifier (UUID) for the schema."
     },
     "version": {
       "type": "string",
@@ -72,7 +73,6 @@
     }
   },
   "required": [
-    "id",
     "version",
     "rulebookURI",
     "attestationLoS",
@@ -127,29 +127,11 @@
         },
         "isLoTE": {
           "type": "boolean",
-          "description": "TRUE if frameworkType is 'etsi_tl' and the TL is a List of Trusted Entities (LoTE)."
+          "description": "TRUE if frameworkType is 'etsi_tl' and the TL is a List of Trusted Entities (LoTE) per ETSI TS 119 602. FALSE if ETSI TS 119 612. Only used with etsi_tl framework type."
         }
       },
       "required": ["frameworkType", "value"],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "if": {
-            "properties": { "frameworkType": { "const": "etsi_tl" } },
-            "required": ["frameworkType"]
-          },
-          "then": {
-            "properties": {
-              "isLoTE": { "type": "boolean" }
-            }
-          },
-          "else": {
-            "not": {
-              "required": ["isLoTE"]
-            }
-          }
-        }
-      ]
+      "additionalProperties": false
     }
   }
 }
