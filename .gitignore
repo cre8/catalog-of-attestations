@@ -1,0 +1,12 @@
+# Private keys - DO NOT COMMIT TO PRODUCTION REPOS
+keys/*.pem
+
+# Keep the public key and JWK
+!keys/*.pub.pem
+!keys/*.jwk.json
+
+# Node.js
+node_modules/
+
+# OS files
+.DS_Store

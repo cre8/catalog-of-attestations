@@ -1,0 +1,9 @@
+{
+  "kty": "EC",
+  "x": "Hes145U9SmAXYpTnxxEqX60X8rPvQyk2OLTnMShP4uo",
+  "y": "mVu1ThB0dlQM913g1n1MRLWQsGSIyNrH6al4Wlt2faM",
+  "crv": "P-256",
+  "kid": "trust-list-signer-2025",
+  "use": "sig",
+  "alg": "ES256"
+}

@@ -36,13 +36,20 @@ This catalog is aligned with two central specifications in the EUDI Wallet refer
 
 ```string
 catalog-of-attestations/
-├── catalog.schema.json                 # JSON Schema for one attestation definition
+├── catalog.schema.json                 # JSON Schema for attestation definition (SchemaMeta)
 ├── attestations/
 │   └── member-ship.json                # Attestation definition (Gym Membership Card)
 ├── schemas/
 │   └── gym-membership.dc+sd-jwt.json   # SD-JWT VC claimset schema for this attestation
 ├── trust-lists/
-│   └── gym-members.json                # ETSI LoTE trust list with X.509 + JWK
+│   ├── gym-members.json                # ETSI LoTE trust list (unsigned, for reference)
+│   └── gym-members.jws                 # [EXTENSION] JWS-signed trust list
+├── keys/
+│   ├── trust-list-signer.jwk.json      # [EXTENSION] Public key for trust list verification
+│   ├── trust-list-signer.pem           # Private key (DO NOT USE IN PRODUCTION)
+│   └── trust-list-signer.pub.pem       # Public key in PEM format
+├── scripts/
+│   └── sign-trust-list.js              # [EXTENSION] Script to sign trust lists
 └── rulebooks/
     └── gym-membership-card/
         └── 1.0.0.md                    # Human-readable Attestation Rulebook (TS11 Section 4.2)
@@ -246,7 +253,10 @@ To use the attestation type:
 
 1. Load the attestation file from `attestations/`
 2. Load referenced schemas from `schemas/`
-3. Load the trust list from `trust-lists/`
+3. **[EXTENSION]** Verify and load the trust list:
+   - Fetch the JWS-signed trust list (`.jws` file)
+   - Verify the signature using the `verificationMethod` public key
+   - Parse the payload to get the LoTE
 4. Build a DCQL query using:
    - VCT = `$id` of the schema
    - Required claims from the schema
@@ -258,3 +268,134 @@ Important:
 
 > **Wallets do not filter untrusted issuers.  
 It is always the verifier’s responsibility to enforce trust.**
+---
+
+## Extensions to TS11
+
+This repository implements several **extensions** to the official TS11 specification to address gaps related to trust list verification for private/non-EU trust anchors. These extensions are clearly marked with `[EXTENSION]` in the schema and documentation.
+
+### Problem Statement
+
+TS11 specifies that `trustedAuthorities` can reference ETSI Trusted Lists, but does not address:
+
+1. **How to verify the trust list itself** — In the EU context, trust lists chain up to the EC's List of Trusted Lists (LOTL). For private trust anchors (like a gym consortium), this chain doesn't exist.
+
+2. **Where to find the verification key** — The `TrustAuthority` object only contains a URI to the trust list, not how to verify its authenticity.
+
+### Solution: `verificationMethod` Extension
+
+We extend the `TrustAuthority` schema with an optional `verificationMethod` property:
+
+```json
+{
+  "frameworkType": "etsi_tl",
+  "value": "https://example.com/trust-list.jws",
+  "isLoTE": true,
+  "verificationMethod": {
+    "type": "JsonWebKey2020",
+    "publicKeyJwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "...",
+      "y": "...",
+      "kid": "trust-list-signer-2025"
+    }
+  }
+}
+```
+
+### Supported Verification Method Types
+
+| Type | Description | Required Properties |
+|------|-------------|---------------------|
+| `JsonWebKey2020` | Public key in JWK format | `publicKeyJwk` |
+| `X509Certificate` | Single X.509 certificate | `x5u` or `x5c` |
+| `X509CertificateChain` | X.509 certificate chain | `x5u` or `x5c` |
+
+### Signed Trust Lists (JWS)
+
+Trust lists can be distributed as JWS (JSON Web Signature) compact serialization:
+
+```
+<base64url-header>.<base64url-payload>.<base64url-signature>
+```
+
+The JWS header includes:
+
+```json
+{
+  "alg": "ES256",
+  "typ": "trustlist+jwt",
+  "kid": "trust-list-signer-2025"
+}
+```
+
+The payload is the complete ETSI LoTE JSON structure.
+
+### Verification Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Load attestation definition (member-ship.json)               │
+│    └── Extract trustedAuthorities[0]                            │
+│        ├── value: "...gym-members.jws"                          │
+│        └── verificationMethod.publicKeyJwk: { ... }             │
+├─────────────────────────────────────────────────────────────────┤
+│ 2. Fetch signed trust list (gym-members.jws)                    │
+│    └── Parse JWS: header.payload.signature                      │
+├─────────────────────────────────────────────────────────────────┤
+│ 3. Verify JWS signature                                         │
+│    └── Use publicKeyJwk from verificationMethod                 │
+│    └── Verify kid matches header.kid                            │
+├─────────────────────────────────────────────────────────────────┤
+│ 4. Parse payload → ETSI LoTE                                    │
+│    └── Extract TrustedEntitiesList                              │
+│    └── Find issuer's ServiceDigitalIdentity                     │
+├─────────────────────────────────────────────────────────────────┤
+│ 5. Verify credential signature                                  │
+│    └── Use issuer's key from trust list                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### When to Use Extensions vs. Standard TS11
+
+| Scenario | Approach |
+|----------|----------|
+| EU QEAA / Pub-EAA | Standard TS11 — trust lists chain to EC LOTL |
+| Private ecosystem (e.g., gym consortium) | **Extension** — use `verificationMethod` |
+| OpenID Federation | Standard TS11 — trust resolves via federation |
+| Cross-border non-EU | **Extension** — embed verification key |
+
+### Signing Trust Lists
+
+Use the provided script to sign trust lists:
+
+```bash
+node scripts/sign-trust-list.js
+```
+
+This creates:
+- `trust-lists/gym-members.jws` — Signed trust list
+- `keys/trust-list-signer.jwk.json` — Public key for verification
+
+> ⚠️ **Security Note**: The private key in `keys/` is for demonstration only. In production, use proper key management (HSM, KMS, etc.).
+
+### Schema Additions Summary
+
+The following elements are **extensions** to the official TS11 `SchemaMeta` schema:
+
+| Element | Location | Description |
+|---------|----------|-------------|
+| `verificationMethod` | `TrustAuthority` | Public key or certificate for trust list verification |
+| `VerificationMethod` | `$defs` | New schema definition for verification methods |
+| `JsonWebKey2020` | `VerificationMethod.type` | JWK-based verification |
+| `X509Certificate` | `VerificationMethod.type` | Single certificate verification |
+| `X509CertificateChain` | `VerificationMethod.type` | Certificate chain verification |
+
+### Compatibility
+
+These extensions are **backwards compatible** with TS11:
+
+- All extension properties are optional
+- Validators ignoring unknown properties will still work
+- EU-based trust lists can omit `verificationMethod` (LOTL chain applies)

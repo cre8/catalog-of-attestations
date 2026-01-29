@@ -5,7 +5,19 @@
   "trustedAuthorities": [
     {
       "frameworkType": "etsi_tl",
-      "value": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/trust-lists/gym-members.json"
+      "value": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/trust-lists/gym-members.jws",
+      "isLoTE": true,
+      "verificationMethod": {
+        "type": "JsonWebKey2020",
+        "publicKeyJwk": {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "Hes145U9SmAXYpTnxxEqX60X8rPvQyk2OLTnMShP4uo",
+          "y": "mVu1ThB0dlQM913g1n1MRLWQsGSIyNrH6al4Wlt2faM",
+          "kid": "trust-list-signer-2025",
+          "alg": "ES256"
+        }
+      }
     }
   ],
   "attestationLoS": "iso_18045_basic",

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/cre8/catalog-of-attestations/main/catalog.schema.json",
   "title": "SchemaMeta",
-  "description": "A common attestation schema data model, aligned with EUDI TS11 specification.",
+  "description": "A common attestation schema data model, aligned with EUDI TS11 specification with extensions for trust list verification.",
   "type": "object",
   "properties": {
     "id": {
@@ -110,7 +110,7 @@
 
     "TrustAuthority": {
       "type": "object",
-      "description": "Applicable trust framework and authority/anchor.",
+      "description": "Applicable trust framework and authority/anchor. Extended with verificationMethod for trust list signature verification.",
       "properties": {
         "frameworkType": {
           "type": "string",
@@ -123,15 +123,79 @@
         },
         "value": {
           "type": "string",
-          "description": "Identifier of the authority (AKI, TL URI, or federation entity identifier)."
+          "description": "Identifier of the authority (AKI, TL URI, or federation entity identifier). For signed trust lists, this may point to a .jws file."
         },
         "isLoTE": {
           "type": "boolean",
           "description": "TRUE if frameworkType is 'etsi_tl' and the TL is a List of Trusted Entities (LoTE) per ETSI TS 119 602. FALSE if ETSI TS 119 612. Only used with etsi_tl framework type."
+        },
+        "verificationMethod": {
+          "$ref": "#/$defs/VerificationMethod",
+          "description": "[EXTENSION] Method to verify the trust list signature. Required for private/non-EU trust lists where no LOTL chain exists."
         }
       },
       "required": ["frameworkType", "value"],
       "additionalProperties": false
+    },
+
+    "VerificationMethod": {
+      "type": "object",
+      "description": "[EXTENSION] Verification method for trust list signature validation. Not part of TS11, added to support private trust anchors.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of verification method.",
+          "enum": [
+            "JsonWebKey2020",
+            "X509Certificate",
+            "X509CertificateChain"
+          ]
+        },
+        "publicKeyJwk": {
+          "type": "object",
+          "description": "Public key in JWK format for signature verification. Used when type is 'JsonWebKey2020'.",
+          "properties": {
+            "kty": { "type": "string" },
+            "crv": { "type": "string" },
+            "x": { "type": "string" },
+            "y": { "type": "string" },
+            "kid": { "type": "string" }
+          },
+          "required": ["kty"]
+        },
+        "x5u": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to X.509 certificate or certificate chain in PEM format. Used when type is 'X509Certificate' or 'X509CertificateChain'."
+        },
+        "x5c": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "X.509 certificate chain as array of base64-encoded DER certificates. Used when type is 'X509CertificateChain'."
+        }
+      },
+      "required": ["type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "JsonWebKey2020" } }
+          },
+          "then": {
+            "required": ["publicKeyJwk"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "enum": ["X509Certificate", "X509CertificateChain"] } }
+          },
+          "then": {
+            "anyOf": [
+              { "required": ["x5u"] },
+              { "required": ["x5c"] }
+            ]
+          }
+        }
+      ]
     }
   }
 }
