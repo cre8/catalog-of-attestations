@@ -88,8 +88,12 @@ It defines:
 - `id` — unique identifier (UUID), server-assigned when registered in the official catalogue
 - `version` — SemVer version string
 - `rulebookURI` — URI to the human-readable Attestation Rulebook
+- `rulebookIntegrity` — SRI hash for verifying rulebook content integrity
 - `supportedFormats[]` — credential formats (e.g., `dc+sd-jwt`, `mso_mdoc`)
-- `schemaURIs[]` — format-specific schema URIs
+- `schemaURIs[]` — format-specific schema URIs with integrity hashes
+  - `formatIdentifier` — the credential format
+  - `uri` — the schema URI
+  - `integrity` — SRI hash for verifying schema content integrity
 - `trustedAuthorities[]` — trust framework references (LoTE, AKI, OpenID Federation)
 - `attestationLoS` — level of security (ISO 18045)
 - `bindingType` — cryptographic binding type (claim, key, biometric, none)
@@ -188,6 +192,14 @@ Using `schemaURIs[]`, the verifier loads the JSON Schema for the specific format
 schemas/gym-membership.dc+sd-jwt.json
 ```
 
+**Important:** Before using the schema, verify its integrity using the `integrity` hash:
+
+```bash
+# Calculate SHA-256 hash and compare with integrity field
+openssl dgst -sha256 -binary schema.json | openssl base64 -A
+# Should match the base64 part of the integrity field (e.g., "sha256-M8H+reBt9Nr/...")
+```
+
 This defines all valid claims for this attestation type.
 
 ### 3. **Load the trust list**
@@ -272,7 +284,71 @@ It is always the verifier’s responsibility to enforce trust.**
 
 ## Extensions to TS11
 
-This repository implements several **extensions** to the official TS11 specification to address gaps related to trust list verification for private/non-EU trust anchors. These extensions are clearly marked with `[EXTENSION]` in the schema and documentation.
+This repository implements several **extensions** to the official TS11 specification to address gaps related to trust list verification for private/non-EU trust anchors and resource integrity verification. These extensions are clearly marked with `[EXTENSION]` in the schema and documentation.
+
+### Integrity Verification Extension
+
+TS11 specifies URIs for rulebooks and schemas but does not address how to verify that the fetched content has not been tampered with. We add **Subresource Integrity (SRI)** hashes to ensure content authenticity.
+
+#### Problem Statement
+
+When fetching external resources (schemas, rulebooks), verifiers need assurance that:
+1. The content has not been modified in transit
+2. The content matches what was intended by the attestation type author
+3. Cache poisoning or CDN compromises are detectable
+
+#### Solution: SRI Hash Fields
+
+We add integrity fields using the [SRI format](https://www.w3.org/TR/SRI/):
+
+| Field | Location | Purpose |
+|-------|----------|---------|
+| `rulebookIntegrity` | Root object | Verify rulebook content |
+| `integrity` | `schemaURIs[]` items | Verify schema content |
+
+**Format:** `sha256-<base64-hash>` (also supports `sha384-` and `sha512-`)
+
+**Example:**
+
+```json
+{
+  "rulebookURI": "https://example.com/rulebook.md",
+  "rulebookIntegrity": "sha256-cJe/IG7DijmXd2FpecyWJVnZ9EuKKprly5auxGm1uIw=",
+  "schemaURIs": [
+    {
+      "formatIdentifier": "dc+sd-jwt",
+      "uri": "https://example.com/schema.json",
+      "integrity": "sha256-M8H+reBt9Nr/s8CRicJrthAnk7UdWyTyONW0N8Z/Axw="
+    }
+  ]
+}
+```
+
+#### Generating Integrity Hashes
+
+```bash
+# Generate SHA-256 SRI hash for a file
+openssl dgst -sha256 -binary <file> | openssl base64 -A
+# Prepend "sha256-" to get the full integrity value
+```
+
+#### Verification Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Fetch external resource (schema or rulebook)                 │
+├─────────────────────────────────────────────────────────────────┤
+│ 2. Calculate SHA-256 hash of fetched content                    │
+├─────────────────────────────────────────────────────────────────┤
+│ 3. Compare with integrity field from attestation definition     │
+│    └── If mismatch: REJECT — content may be tampered            │
+│    └── If match: ACCEPT — content is authentic                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Trust List Verification Extension
 
 ### Problem Statement
 
@@ -386,6 +462,8 @@ The following elements are **extensions** to the official TS11 `SchemaMeta` sche
 
 | Element | Location | Description |
 |---------|----------|-------------|
+| `rulebookIntegrity` | Root object | SRI hash for rulebook content verification |
+| `integrity` | `Schema` | SRI hash for schema content verification |
 | `verificationMethod` | `TrustAuthority` | Public key or certificate for trust list verification |
 | `VerificationMethod` | `$defs` | New schema definition for verification methods |
 | `JsonWebKey2020` | `VerificationMethod.type` | JWK-based verification |
@@ -396,6 +474,6 @@ The following elements are **extensions** to the official TS11 `SchemaMeta` sche
 
 These extensions are **backwards compatible** with TS11:
 
-- All extension properties are optional
+- All extension properties are optional (except `rulebookIntegrity` and schema `integrity` which are required for security)
 - Validators ignoring unknown properties will still work
 - EU-based trust lists can omit `verificationMethod` (LOTL chain applies)

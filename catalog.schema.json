@@ -17,8 +17,13 @@
     },
     "rulebookURI": {
       "type": "string",
-      "description": "URI of the human-readable Attestation Rulebook, optionally with an SRI integrity fragment.",
+      "description": "URI of the human-readable Attestation Rulebook.",
       "format": "uri"
+    },
+    "rulebookIntegrity": {
+      "type": "string",
+      "description": "Subresource Integrity (SRI) hash of the rulebook content for integrity verification. Format: 'sha256-<base64-hash>' or 'sha384-<base64-hash>' or 'sha512-<base64-hash>'.",
+      "pattern": "^sha(256|384|512)-[A-Za-z0-9+/=]+$"
     },
     "trustedAuthorities": {
       "type": "array",
@@ -75,6 +80,7 @@
   "required": [
     "version",
     "rulebookURI",
+    "rulebookIntegrity",
     "attestationLoS",
     "bindingType",
     "supportedFormats",
@@ -100,11 +106,16 @@
         },
         "uri": {
           "type": "string",
-          "description": "Persistent schema URI for this format (may include SRI fragment).",
+          "description": "Persistent schema URI for this format.",
           "format": "uri"
+        },
+        "integrity": {
+          "type": "string",
+          "description": "Subresource Integrity (SRI) hash of the schema content for integrity verification. Format: 'sha256-<base64-hash>' or 'sha384-<base64-hash>' or 'sha512-<base64-hash>'.",
+          "pattern": "^sha(256|384|512)-[A-Za-z0-9+/=]+$"
         }
       },
-      "required": ["formatIdentifier", "uri"],
+      "required": ["formatIdentifier", "uri", "integrity"],
       "additionalProperties": false
     },
 
